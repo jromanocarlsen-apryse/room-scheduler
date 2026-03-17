@@ -1,7 +1,10 @@
-const express = require('express');
+import { RoomList } from "./src/roomList.js";
+import express from 'express';
 
 const app = express();
 const PORT = 3000;
+
+let roomList;
 
 app.use(express.json()); 
 
@@ -80,23 +83,25 @@ app.get('/rooms', (_, res) => {
     // TODO call the function to get all rooms (this function needs to be implemented)
     // const rooms = getAllRooms();
 
-    // TODO FOR NOW, we will just return a dummy list of rooms. You need to implement the logic to retrieve the actual list of rooms.
-    const rooms = [
-        { 
-            roomId: '1', 
-            meetings: [
-                { meetingId: 'meeting1', startTime: '100', endTime: '200' },
-                { meetingId: 'meeting2', startTime: '400', endTime: '500' }
-            ],
-        },
-        {
-            roomId: '2',
-            meetings: [
-                { meetingId: 'meeting3', startTime: '150', endTime: '250' },
-                { meetingId: 'meeting4', startTime: '300', endTime: '400' }
-            ],
-        }
-    ]; // Replace this with actual logic to retrieve the list of rooms
+    // // TODO FOR NOW, we will just return a dummy list of rooms. You need to implement the logic to retrieve the actual list of rooms.
+    // const rooms = [
+    //     { 
+    //         roomId: '1', 
+    //         meetings: [
+    //             { meetingId: 'meeting1', startTime: '100', endTime: '200' },
+    //             { meetingId: 'meeting2', startTime: '400', endTime: '500' }
+    //         ],
+    //     },
+    //     {
+    //         roomId: '2',
+    //         meetings: [
+    //             { meetingId: 'meeting3', startTime: '150', endTime: '250' },
+    //             { meetingId: 'meeting4', startTime: '300', endTime: '400' }
+    //         ],
+    //     }
+    // ]; // Replace this with actual logic to retrieve the list of rooms
+
+    const rooms = roomList.getAllRooms();
 
     // Return the list of rooms
     res.status(200).json({ rooms });
@@ -138,10 +143,11 @@ app.get('/roomCount', (_, res) => {
 });
 
 
-app.listen(PORT, (error) =>{
-    if(!error)
+app.listen(PORT, (error) => {
+    if(!error) {
+        roomList = new RoomList();
         console.log("Server is Successfully Running, and App is listening on port "+ PORT);
-    else 
+    } else {
         console.log("Error occurred, server can't start", error);
     }
-);
+});
