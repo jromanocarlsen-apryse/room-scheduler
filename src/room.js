@@ -1,12 +1,12 @@
 export class Room {
 
     //** Unique identifier for the room */
-    id;
+    roomId;
     //** Map of meeting id to meeting object (Map<meetingId, [startTime, endTime]>) */
     meetingList;
 
     constructor(id) {
-        this.id = id;
+        this.roomId = id;
         this.meetingList = new Map();
     }
 
@@ -60,7 +60,8 @@ export class Room {
         const conflictingMeetings = [];
         for (const [meetingId, [meetingStart, meetingEnd]] of this.meetingList.entries()) {
             if (startTime < meetingEnd && endTime > meetingStart) {
-                conflictingMeetings.push([meetingId, [meetingStart, meetingEnd]]);
+                const roomId = this.roomId;
+                conflictingMeetings.push({ roomId, meetingId, meetingStart, meetingEnd });
             }
         }
 
