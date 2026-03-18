@@ -1,38 +1,99 @@
 export class Heap {
-    
-    //** Array to store the heap elements */
+
+    //** 
+    // Array to store the heap elements
+    // Each element in the heap is an object with the following structure:
+    // {
+    //     roomId: string, // Unique identifier for the room
+    //     nextAvailableTime: number // The next available time for the room (the maximum end time of all meetings in the room)
+    // }
+    //  */
     heap;
 
     constructor() {
         this.heap = [];
     }
 
-    insert(node){
-        // TODO
+    insert(node) {
+        // Add the new node to the end of the heap array
+        this.heap.push(node);
+        // Bubble up the new node to maintain the heap property
+        this.bubbleUp(this.heap.length - 1);
     }
 
     peek() {
-        // TODO
+        // Return the minimum element in the heap (the root of the heap)
+        return this.heap.length > 0 ? this.heap[0] : null;
     }
 
     extractMin() {
-        // TODO
+        // Remove and return the minimum element in the heap (the root of the heap)
+        if (this.heap.length === 0) {
+            return null; // Heap is empty
+        }
+        if (this.heap.length === 1) {
+            return this.heap.pop(); // Only one element in the heap
+        }
+        const min = this.heap[0]; // Store the minimum element to return later
+        this.heap[0] = this.heap.pop(); // Move the last element to the root
+
+        // New root may not be the minimum, so bubble it down until the heap property is restored (i.e., the root is smaller than both children)
+        this.bubbleDown(0); // Bubble down the new root to maintain the heap property
+        return min; // Return the minimum element
     }
 
     bubbleUp(index) {
-        // TODO
+        // Bubble up the element at the given index to maintain the heap property
+        // Essentially, swap the element with its parent until the heap property is satisfied (i.e., the parent is smaller than the element)
+        while (index > 0) {
+            const parentIndex = Math.floor((index - 1) / 2); // formula for finding the parent's associated array index
+            if (this.heap[index].nextAvailableTime < this.heap[parentIndex].nextAvailableTime) {
+                this.swap(index, parentIndex);
+                index = parentIndex;
+            } else {
+                break; // The heap property is satisfied
+            }
+        }
     }
 
     bubbleDown(index) {
-        // TODO
+        // Bubble down the element at the given index to maintain the heap property
+        // Essentially, swap the element with its smallest child until the heap property is satisfied (i.e., the element is smaller than both children)
+        const length = this.heap.length;
+        const element = this.heap[index];
+        while (true) {
+            const leftChildIndex = 2 * index + 1; // formula for finding the left child's associated array index
+            const rightChildIndex = 2 * index + 2; // formula for finding the right child's associated array index
+            let smallest = index;
+
+            if (leftChildIndex < length && this.heap[leftChildIndex].nextAvailableTime < this.heap[smallest].nextAvailableTime) {
+                smallest = leftChildIndex;
+            }
+
+            if (rightChildIndex < length && this.heap[rightChildIndex].nextAvailableTime < this.heap[smallest].nextAvailableTime) {
+                smallest = rightChildIndex;
+            }
+
+            if (smallest === index) break;
+
+            this.swap(index, smallest);
+            index = smallest;
+        }
     }
 
     swap(i, j) {
-        // TODO
+        // Swap the elements at indices i and j in the heap array
+        const temp = this.heap[i];
+        this.heap[i] = this.heap[j];
+        this.heap[j] = temp;
     }
 
     buildHeap(array) {
-        // TODO
+        // Build a heap from an array of elements
+        this.heap = array;
+        for (let i = Math.floor(this.heap.length / 2) - 1; i >= 0; i--) {
+            this.bubbleDown(i);
+        }
     }
 
 }
