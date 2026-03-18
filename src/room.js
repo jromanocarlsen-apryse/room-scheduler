@@ -39,15 +39,14 @@ export class Room {
         return maxEndTime;
     }
 
-    getMeetings(sorted = false) {
+    getMeetings() {
         // return the meetingList map for the room
-        // if sorted is true, return the meetings sorted by start time, otherwise return them in any order
-        const meetingsArray = Array.from(this.meetingList.entries());
-        if (sorted) {
-            return meetingsArray.sort((a, b) => a[1][0] - b[1][0]);
-        } else {
-            return meetingsArray;
-        }
+        return Array.from(this.meetingList.entries());
+    }
+
+    getSortedMeetings() {
+        // return the meetingList map for the room sorted by start time
+        return this.getMeetings().sort((a, b) => a[1][0] - b[1][0]);
     }
 
     isEmpty() {
@@ -68,5 +67,41 @@ export class Room {
         // return a list of conflicting meetings
         return conflictingMeetings;
     }
-    
+
+    canFit(startTime, endTime) {
+        if (startTime < 0 || endTime <= startTime) {
+            return false; // invalid meeting time
+        }
+
+        const sortedMeetings = this.getSortedMeetings();
+
+        // boundary case: if there are no meetings in the room, the meeting can fit
+        if (sortedMeetings.length === 0) {
+            return true;
+        }
+
+        // check if the meeting can fit before the first meeting in the room
+        const firstMeetingStart = sortedMeetings[0][1][0];
+        if (endTime <= firstMeetingStart) {
+            return true;
+        }
+
+        // check if the meeting can fit between any two meetings in the room
+        for (let i = 0; i < sortedMeetings.length - 1; i++) {
+            const currentMeetingEnd = sortedMeetings[i][1][1];
+            const nextMeetingStart = sortedMeetings[i + 1][1][0];
+            if (startTime >= currentMeetingEnd && endTime <= nextMeetingStart) {
+                return true;
+            }
+        }
+
+        // check if the meeting can fit after the last meeting in the room
+        const lastMeetingEnd = sortedMeetings[sortedMeetings.length - 1][1][1];
+        if (startTime >= lastMeetingEnd) {
+            return true;
+        }
+
+        // the meeting cannot fit in the room
+        return false;
+    }
 }
