@@ -1,6 +1,6 @@
 import { RoomList } from "../src/core/roomList.js";
 
-describe('RoomList', () => {
+describe('RoomList tests', () => {
     let roomList;
 
     function generateSampleMeetings() {
