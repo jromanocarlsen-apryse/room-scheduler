@@ -48,7 +48,7 @@ export class RoomList {
     // Complexity: O(log n) where n is the number of rooms in the room list, since we are using a min-heap to keep track of the next available times for the rooms, and we need to insert/update the heap when scheduling a meeting
     //  */
     scheduleMeeting(startTime, endTime) {
-        
+
         // lazily sync the heap to make sure it's up to date before trying to schedule the meeting, so that we can get the most accurate next available times for the rooms
         this.syncHeap();
 
@@ -71,11 +71,13 @@ export class RoomList {
                     break;
                 }
             }
-            
+
             // No room fits the meeting, so we need to create a new room
-            const roomId = this.incrementRoomCounter(); // Generate a unique room id
-            targetRoom = new Room(roomId);
-            this.rooms.set(roomId, targetRoom); // Add the new room to the rooms map
+            if (!targetRoom) {
+                const roomId = this.incrementRoomCounter(); // Generate a unique room id
+                targetRoom = new Room(roomId);
+                this.rooms.set(roomId, targetRoom); // Add the new room to the rooms map
+            }
         }
 
         targetRoom.addMeeting(meetingId, [startTime, endTime]); // Add the meeting to the room
@@ -99,7 +101,7 @@ export class RoomList {
             return false; // Room does not exist
         }
         const room = this.rooms.get(roomId);
-        
+
         // remove the meeting from the room object
         room.removeMeeting(meetingId);
 
@@ -157,7 +159,7 @@ export class RoomList {
             conflicts.push(...roomConflicts);
         }
         // Return the list of conflicting meetings
-        return conflicts; 
+        return conflicts;
     }
 
 
