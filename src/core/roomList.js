@@ -131,10 +131,6 @@ export class RoomList {
     // Complexity: O(n) where n is the number of rooms in the room list
     // */
     getAllRooms() {
-
-        // lazy sync the heap to make sure it's up to date before trying to get all rooms, so that we can get the most accurate next available times for the rooms
-        this.syncHeap();
-
         // return a list of all rooms with their meetings
         const allRooms = [];
         for (const [roomId, room] of this.rooms) {
