@@ -60,7 +60,12 @@ export class Room {
         for (const [meetingId, [meetingStart, meetingEnd]] of this.meetingList.entries()) {
             if (startTime < meetingEnd && endTime > meetingStart) {
                 const roomId = this.roomId;
-                conflictingMeetings.push({ roomId, meetingId, meetingStart, meetingEnd });
+                conflictingMeetings.push({ 
+                    roomId, 
+                    meetingId, 
+                    startTime: meetingStart, 
+                    endTime: meetingEnd 
+                });
             }
         }
 
