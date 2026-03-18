@@ -48,10 +48,6 @@ export class RoomList {
     // Complexity: O(log n) where n is the number of rooms in the room list, since we are using a min-heap to keep track of the next available times for the rooms, and we need to insert/update the heap when scheduling a meeting
     //  */
     scheduleMeeting(startTime, endTime) {
-        // validate input, startTime and endTime are assumed to exist
-        if (typeof startTime !== 'number' || typeof endTime !== 'number' || startTime < 0 || endTime <= startTime) {
-            throw new Error('Invalid input: startTime and endTime must be non-negative numbers, and endTime must be greater than startTime.');
-        }
         
         // lazily sync the heap to make sure it's up to date before trying to schedule the meeting, so that we can get the most accurate next available times for the rooms
         this.syncHeap();
@@ -63,12 +59,20 @@ export class RoomList {
         // peak at the top of the heap to get the room with the earliest next available time
         const bestRoom = this.heap.peek();
 
+        // OPTIMIZATION: Use heap sort where possible
         // get actual availability if room by calling getNextAvailableTime on the room object
         if (bestRoom && bestRoom.nextAvailableTime <= startTime) {
             targetRoom = this.rooms.get(bestRoom.roomId); // Reuse the room if it's available before the start time of the meeting
         } else {
-            // if the heap is empty, create room 1 and add the meeting to that room
-            // if the top room is not available before the start time of the meeting, create a new room
+            // OPTIMIZATION: Fallback: Scan rooms for gaps
+            for (const room of this.rooms.values()) {
+                if (room.canFit(startTime, endTime)) {
+                    targetRoom = room; // Reuse the room if it's available before the start time of the meeting
+                    break;
+                }
+            }
+            
+            // No room fits the meeting, so we need to create a new room
             const roomId = this.incrementRoomCounter(); // Generate a unique room id
             targetRoom = new Room(roomId);
             this.rooms.set(roomId, targetRoom); // Add the new room to the rooms map
@@ -116,8 +120,8 @@ export class RoomList {
         if (!room) {
             return null; // Room does not exist
         }
-        // return the schedule of the room by calling getMeetings on the room object
-        return room.getMeetings(true); // getMeetings(true) returns the meetings sorted by start time
+        // return the schedule of the room by calling getSortedMeetings on the room object
+        return room.getSortedMeetings(); // getSortedMeetings() returns the meetings sorted by start time
     }
 
     //** 
@@ -132,7 +136,7 @@ export class RoomList {
         // return a list of all rooms with their meetings
         const allRooms = [];
         for (const [roomId, room] of this.rooms) {
-            allRooms.push({ roomId, meetings: room.getMeetings(true) }); // getMeetings(true) returns the meetings sorted by start time
+            allRooms.push({ roomId, meetings: room.getSortedMeetings() }); // getSortedMeetings() returns the meetings sorted by start time
         }
         return allRooms;
     }
