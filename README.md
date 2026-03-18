@@ -19,6 +19,7 @@ Firstly, most of the behavior of this application seemed to fall under one of th
 - A "Meeting"
 - The "Room" which hosts a schedule of meetings
 - The list of "Meeting Rooms" used (which should be kept to a minimum)
+
 Therefore, I separated responsibilities based into these 3 "concepts" and created methods where it made sense for each "concept" (see "PROMPT: Design" and "PROMPT: Internal Structures" in whiteboard)
 - A "Meeting" is described to be [startTime, endTime], so keep this as a primitive array of 2 number elements, no functions necessary
 - A "Room" would be responsible for tracking its current meetings, i.e. CRUD operations, sorting, and queries to the list of meetings
