@@ -55,10 +55,10 @@ To assist with the implementation, AI tools such as Copilot and ChatGPT were use
 ## Time Complexities
 
 ### scheduleMeeting
-O(n log n), n = num of rooms
-- min-heap heap operations take O(log n) efficiency
+O(n), n = num of rooms
+- min-heap buildHeap operation takes O(n) efficiency
 - Fallback scan through all rooms operation takes O(n) efficiency
-- Worse case would be operating through both algorithms, aka O(n log n)
+- Worse case would be operating through both algorithms O(2n), aka O(n)
 ### cancelMeeting
 o(1)
 - Due to implementation of Maps for meetingList / rooms / meetingToRoomMap, we have a constant efficiency for removing meetings (and potentially rooms) from existing maps using Map functions
