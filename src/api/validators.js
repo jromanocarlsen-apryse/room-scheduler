@@ -1,5 +1,5 @@
+// Check if startTime and endTime are provided and are numbers
 export function validateMeetingTimeInput(startTime, endTime) {
-    // Check if startTime and endTime are provided and are numbers
     if (startTime === undefined || endTime === undefined) {
         return { valid: false, error: 'Both startTime and endTime are required.' };
     }
@@ -12,8 +12,8 @@ export function validateMeetingTimeInput(startTime, endTime) {
     return { valid: true };
 }
 
+// Check if meetingId is provided and is a string
 export function validateMeetingIdInput(meetingId) {
-    // Check if meetingId is provided and is a string
     if (!meetingId) {
         return { valid: false, error: 'Meeting ID is required.' };
     }
@@ -23,8 +23,8 @@ export function validateMeetingIdInput(meetingId) {
     return { valid: true };
 }
 
+// Check if roomId is provided and is a string
 export function validateRoomIdInput(roomId) {
-    // Check if roomId is provided and is a string
     if (!roomId) {
         return { valid: false, error: 'Room ID is required.' };
     }
