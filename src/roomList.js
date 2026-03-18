@@ -1,125 +1,159 @@
 import { Room } from "./room.js";
+import { Heap } from "./heap.js";
 
 export class RoomList {
-    //** Map of room id to room object */
+    //** Map<roomId, Room> */
     rooms;
+    //** Map<meetingId, roomId> */
     meetingToRoomMap;
+    //** Min-heap to keep track of rooms based on their next available time */
     heap;
 
 
     constructor() {
         this.rooms = new Map();
         this.meetingToRoomMap = new Map();
-        this.heap = [];
+        this.heap = new Heap();
+
+        // Counters for unique room and meeting ids
+        this.roomIdCounter = 1;
+        this.meetingIdCounter = 1;
+    }
+
+    //** Internal function to increment room counter */
+    incrementRoomCounter() {
+        return `r${this.roomIdCounter++}`;
+    }
+
+    //** Internal function to increment meeting counter */
+    incrementMeetingCounter() {
+        return `m${this.meetingIdCounter++}`;
     }
 
     //** Internal function to synchronize the heap with the current state of rooms */
     syncHeap() {
-        // TODO
-
+        const nodes = [];
         // iterate through all rooms and update the heap with the next available time for each room
+        for (const [roomId, room] of this.rooms) {
+            const nextAvailableTime = room.getNextAvailableTime();
+            nodes.push({ roomId, nextAvailableTime });
+        }
 
         // sort the heap based on the next available time for each room
+        this.heap.buildHeap(nodes);
     }
 
-    //** Function to add a room to the room list */
-    addRoom(startTime, endTime) {
-        // TODO
+    //** 
+    // Function to schedule a meeting in the room list
+    // Complexity: O(log n) where n is the number of rooms in the room list, since we are using a min-heap to keep track of the next available times for the rooms, and we need to insert/update the heap when scheduling a meeting
+    //  */
+    scheduleMeeting(startTime, endTime) {
+        // validate input, startTime and endTime are assumed to exist
+        if (typeof startTime !== 'number' || typeof endTime !== 'number' || startTime < 0 || endTime <= startTime) {
+            throw new Error('Invalid input: startTime and endTime must be non-negative numbers, and endTime must be greater than startTime.');
+        }
         
-        // call syncHeap
+        // lazily sync the heap to make sure it's up to date before trying to schedule the meeting, so that we can get the most accurate next available times for the rooms
+        this.syncHeap();
 
-        // peak at the top of the heap to get the room with the earliest next available time
-
-        // if the heap is empty, create room 1 and add the meeting to that room
+        const meetingId = this.incrementMeetingCounter(); // Generate a unique meeting id
+        let targetRoom = null;
 
         // if the heap is not empty, check the top room
+        // peak at the top of the heap to get the room with the earliest next available time
+        const bestRoom = this.heap.peek();
 
         // get actual availability if room by calling getNextAvailableTime on the room object
+        if (bestRoom && bestRoom.nextAvailableTime <= startTime) {
+            targetRoom = this.rooms.get(bestRoom.roomId); // Reuse the room if it's available before the start time of the meeting
+        } else {
+            // if the heap is empty, create room 1 and add the meeting to that room
+            // if the top room is not available before the start time of the meeting, create a new room
+            const roomId = this.incrementRoomCounter(); // Generate a unique room id
+            targetRoom = new Room(roomId);
+            this.rooms.set(roomId, targetRoom); // Add the new room to the rooms map
+        }
 
-        // if the actual avail is different than the avail in the heap, update the heap with the actual avail
+        targetRoom.addMeeting(meetingId, [startTime, endTime]); // Add the meeting to the room
+        this.meetingToRoomMap.set(meetingId, targetRoom.roomId); // Update the meetingToRoomMap with the room id for the meeting id
 
-        // if the top room is available before the start time of the meeting reuse the room
+        // syncHeap in next call will update the heap with the new next available time for the room, so we don't need to update the heap here
 
-        // if the top room is not available before the start time of the meeting, create a new room
-
-        // add the meeting to the room
-        
-        // update the meetingToRoomMap with the room id for the meeting id
-
-        // update the heap with the new next available time for the room
+        return meetingId; // Return the unique id for the scheduled meeting
     }
 
-    //** Function to remove a room from the room list via id */
-    removeRoom(roomId) {
-        // TODO
-
+    //** 
+    // Function to cancel a meeting in the room list via meeting id
+    // Remove the meeting from the room it is scheduled in, and if the room becomes empty after removing the meeting, remove the room from the rooms map
+    // Returns true if the room was successfully removed, otherwise returns false
+    // Complexity: O(1) as getting the room id, room object, and removing the meeting from the room are all O(1) operations due to the use of maps
+    //  */
+    cancelMeeting(meetingId) {
         // lookup roomId via meetingToRoomMap to get the room object
-
+        const roomId = this.meetingToRoomMap.get(meetingId);
+        if (!roomId) {
+            return false; // Room does not exist
+        }
+        const room = this.rooms.get(roomId);
+        
         // remove the meeting from the room object
+        room.removeMeeting(meetingId);
 
         // remove the meeting from the meetingToRoomMap
+        this.meetingToRoomMap.delete(meetingId);
 
         // if the room is empty after removing the meeting, remove the room from the rooms map
-    }
-
-    //** Function to get a room from the room list via id */
-    getRoom(roomId) {
-        // TODO
-
-        // return the room object for the given room id
+        if (room.isEmpty()) {
+            this.rooms.delete(roomId);
+        }
+        return true;
     }
 
     //** Function to get the schedule of a room via id */
     getRoomSchedule(roomId) {
-        // TODO
-
         // lookup roomId via meetingToRoomMap to get the room object
-
-        // return the list of meetings for the room
+        const room = this.rooms.get(roomId);
+        if (!room) {
+            return null; // Room does not exist
+        }
+        // return the schedule of the room by calling getMeetings on the room object
+        return room.getMeetings(true); // getMeetings(true) returns the meetings sorted by start time
     }
 
-    //** Function to get all rooms in the room list */
+    //** 
+    // Function to get all rooms in the room list 
+    // Complexity: O(n) where n is the number of rooms in the room list
+    // */
     getAllRooms() {
-        // TODO
-        // const rooms = [
-        //     {
-        //         roomId: '1',
-        //         meetings: [
-        //             { meetingId: 'TESTING1', startTime: '100', endTime: '200' },
-        //             { meetingId: 'TESTING2', startTime: '400', endTime: '500' }
-        //         ],
-        //     },
-        //     {
-        //         roomId: '2',
-        //         meetings: [
-        //             { meetingId: 'TESTING3', startTime: '150', endTime: '250' },
-        //             { meetingId: 'TESTING4', startTime: '300', endTime: '400' }
-        //         ],
-        //     }
-        // ]; // Replace this with actual logic to retrieve the list of rooms
-        // return rooms;
 
-        // call syncHeap to make sure the heap is up to date
+        // lazy sync the heap to make sure it's up to date before trying to get all rooms, so that we can get the most accurate next available times for the rooms
+        this.syncHeap();
 
         // return a list of all rooms with their meetings
+        const allRooms = [];
+        for (const [roomId, room] of this.rooms) {
+            allRooms.push({ roomId, meetings: room.getMeetings(true) }); // getMeetings(true) returns the meetings sorted by start time
+        }
+        return allRooms;
     }
 
     getRoomCounter() {
-        // TODO
-
         // return the number of rooms currently in the room list
+        return this.rooms.size;
     }
 
     getConflictingMeetings(startTime, endTime) {
-        // TODO
+        const conflicts = [];
 
         // iterate through all rooms
-
-        // for each room, call findConflictingMeetings on the room object to get a list of conflicting meetings for that room
-
-        // add the conflicting meetings to a list of conflicts along with their room ids
-
-        // return the list of conflicting meetings along with their room ids
+        for (const [_, room] of this.rooms) {
+            // for each room, call findConflictingMeetings on the room object to get a list of conflicting meetings for that room
+            // add the conflicting meetings to the overall list of conflicts
+            const roomConflicts = room.findConflictingMeetings(startTime, endTime);
+            conflicts.push(...roomConflicts);
+        }
+        // Return the list of conflicting meetings
+        return conflicts; 
     }
 
 
